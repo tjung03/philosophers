@@ -16,7 +16,7 @@ all:		$(NAME)
 
 $(NAME):	$(OBJS)
 			@echo "\n\033[0;33mCompiling..."
-			$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+			$(CC) $(CFLAGS) -o $(NAME) $(OBJS) -lpthread
 			@echo "\033[0m"
 
 clean:

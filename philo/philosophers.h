@@ -18,15 +18,25 @@
  *		me == number_of_times_each_philosopher_must_eat
  */
 typedef struct s_argu {
-	int pn;
-	int dt;
-	int et;
-	int st;
-	int me;
+	int	pn;
+	int	dt;
+	int	et;
+	int	st;
+	int	me;
 }	t_argu;
+
+typedef struct s_philo {
+	pthread_t	pid;
+	int			lf;
+	int			rf;
+	int			me_val;
+	int			*me_cnt;
+}	t_philo;
 
 typedef struct s_global {
 	struct s_argu	opt;
+	struct s_philo	*philo;
+	int				me_cnt;
 }	t_global;
 
 /*
