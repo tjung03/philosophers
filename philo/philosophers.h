@@ -17,41 +17,40 @@
  *		st == time_to_sleep
  *		me == number_of_times_each_philosopher_must_eat
  */
-typedef struct s_argu {
-	int	pn;
-	int	dt;
-	int	et;
-	int	st;
-	int	me;
-}	t_argu;
+typedef struct s_common {
+	pthread_mutex_t	*arr_fork;
+	long long		start_systime;
+	int				pn;
+	int				dt;
+	int				et;
+	int				st;
+	int				me;
+	int				me_cnt;
+}	t_common;
 
 typedef struct s_philo {
-	pthread_t	pid;
-	int			lf;
-	int			rf;
-	int			me_val;
-	int			*me_cnt;
+	pthread_t		pid;
+	long long		end_eattime;
+	int				philo_num;
+	int				lf;
+	int				rf;
+	struct s_common	*cmn;
 }	t_philo;
-
-typedef struct s_global {
-	struct s_argu	opt;
-	struct s_philo	*philo;
-	int				me_cnt;
-}	t_global;
 
 /*
  *		ft.c
  */
-int	ft_atoi(char *s);
+int			ft_atoi(char *s);
 
 /*
  *		tools.c
  */
-int	print_error(int ret, char *s);
+int			print_error(int ret, char *s);
+long long	get_time(void);
 
 /*
  *		parsing.c
  */
-int	get_options(t_global *g, int ac, char **av);
+int			get_options(t_common *g, int ac, char **av);
 
 #endif

@@ -1,49 +1,102 @@
 #include "philosophers.h"
 
-int	start_dining(t_philo *info)
+int	philo_think()
 {
-
+	printf("is thinking\n");
+	return (0);
 }
 
-void	init_thread_info(t_global *g)
+int	philo_sleep()
+{
+	printf("is sleeping\n");
+	return (0);
+}
+
+int	philo_eat()
+{
+	printf("is eating\n");
+	return (0);
+}
+
+int	get_fork()
+{
+	return (0);
+}
+
+void	*go_dining(void *info)
+{
+	t_philo	*po;
+
+	po = (t_philo *)info;
+/*
+	philo_eat();
+	philo_sleep();
+	philo_think();
+*/
+	return (NULL);
+}
+
+void	init_thread_info(t_common *cmn, t_philo *po)
 {
 	int	i;
 
-	memset(g->philo, 0, sizeof(*(g->philo)));
+	memset(po, 0, sizeof(*po));
 	i = -1;
-	while (++i < g->opt.pn)
+	while (++i < cmn->pn)
 	{
-		g->philo[i].me_val = g->opt.me;
-		g->philo[i].me_cnt = &g->me_cnt;
+		po[i].philo_num = i + 1;
+		po[i].lf = i;
+		if (i == 0)
+			po[i].rf = cmn->pn - 1;
+		else
+			po[i].rf = i - 1;
+		po[i].cmn = cmn;
 	}
 }
 
-int	dining_philo(t_global *g)
+void	join_thread(t_philo *po)
 {
 	int	i;
 
-	g->philo = (t_philo *)malloc(sizeof(t_philo) * g->opt.pn);
-	if (!(g->philo))
+	i = -1;
+	while (++i < po->cmn->pn)
+		pthread_join(po[i].pid, NULL);
+}
+
+int	dining_philo(t_common *cmn)
+{
+	t_philo	*po;
+	int		i;
+
+	po = (t_philo *)malloc(sizeof(t_philo) * cmn->pn);
+	if (!po)
 		return (print_error(1, "Philo threads ERROR!"));
-	init_thread_info(g);
+	cmn->start_systime = get_time();
+	cmn->arr_fork = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * cmn->pn);
+	if (!(cmn->arr_fork))
+		return (print_error(1, "Array fork malloc ERROR!"));
+	init_thread_info(cmn, po);
 	i = -1;
-	while (++i < g->opt.pn)
+	while (++i < cmn->pn)
 	{
-		pthread_create(g->philo->pid, NULL, start_dining, &g->philo[i]);
+		pthread_create(&po[i].pid, NULL, go_dining, (void *)&po[i]);
 	}
+	join_thread(po);
+	free(po);
+	free(cmn->arr_fork);
 	return (0);
 }
 
 int	main(int ac, char **av)
 {
-	t_global	g;
+	t_common	cmn;
 
-	memset(&g, 0, sizeof(g));
+	memset(&cmn, 0, sizeof(cmn));
 	if (ac == 5 || ac == 6)
 	{
-		if (get_options(&g, ac, av))
+		if (get_options(&cmn, ac, av))
 			return (print_error(1, "Parsing ERROR!(options)"));
-		if (dining_philo(&g))
+		if (dining_philo(&cmn))
 			return (print_error(1, "dining_philo() ERROR!"));
 	}
 	else
