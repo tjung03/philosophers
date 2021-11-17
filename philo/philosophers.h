@@ -25,15 +25,19 @@ typedef struct s_common {
 	int				et;
 	int				st;
 	int				me;
-	int				me_cnt;
+	int				death;
+	int				all_seated;
 }	t_common;
 
 typedef struct s_philo {
 	pthread_t		pid;
-	long long		end_eattime;
+	long long		end_eat;
+	long long		get_forks;
 	int				philo_num;
 	int				lf;
 	int				rf;
+	int				me_cnt;
+	int				enough;
 	struct s_common	*cmn;
 }	t_philo;
 
