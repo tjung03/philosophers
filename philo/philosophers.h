@@ -19,6 +19,7 @@
  */
 typedef struct s_common {
 	pthread_mutex_t	*arr_fork;
+	pthread_mutex_t	ctrl_print;
 	long long		start_systime;
 	int				pn;
 	int				dt;
@@ -27,12 +28,14 @@ typedef struct s_common {
 	int				me;
 	int				death;
 	int				all_seated;
+	int				all_enough;
 }	t_common;
 
 typedef struct s_philo {
 	pthread_t		pid;
-	long long		end_eat;
+	long long		hunger_start;
 	long long		get_forks;
+	long long		renewal_time;
 	int				philo_num;
 	int				lf;
 	int				rf;
@@ -50,6 +53,7 @@ int			ft_atoi(char *s);
  *		tools.c
  */
 int			print_error(int ret, char *s);
+int			print_state(t_philo *po, long long ntime, char state);
 long long	get_time(void);
 
 /*

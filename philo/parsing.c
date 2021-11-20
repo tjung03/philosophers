@@ -31,7 +31,11 @@ int	get_options(t_common *cmn, int ac, char **av)
 	cmn->st = ft_atoi(av[4]);
 	cmn->me = -1;
 	if (ac == 6)
+	{
 		cmn->me = ft_atoi(av[5]);
+		if (cmn->me < 0)
+			return (print_error(1, "It must be a value greater than zero!"));
+	}
 	if (cmn->pn >= 200
 		|| cmn->dt < 60 || cmn->et < 60 || cmn->st < 60)
 		return (print_error(1, "This value doesn't meet the conditions!"));
