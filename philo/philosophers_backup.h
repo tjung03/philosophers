@@ -18,28 +18,33 @@
  *		me == number_of_times_each_philosopher_must_eat
  */
 typedef struct s_common {
-//	pthread_mutex_t	forks;//-> 배열 뮤텍스
-//	pthread_mutex_t	stdout_mutex;//-> 출력 고정 뮤텍스
-//	long long		start_time;//-> 시스템 시작 시간
+	pthread_mutex_t	*arr_fork;
+	pthread_mutex_t	ctrl_print;
+	long long		start_systime;
 	int				pn;
 	int				dt;
 	int				et;
 	int				st;
 	int				me;
-//	int				death;//-> 철학자가 최소 한 명 이상 죽었음을 나타내는 변수
-//	int				all_seated;//-> 모든 철학자가 테이블에 앉았음을 나타내는 변수
-//	int				all_enough;//-> 모든 철학자가 최소 must_eat 횟수만큼 식사했음을 나타내는 변수
+	int				death;
+	int				fork_death;
+	int				all_seated;
+	int				all_enough;
+	int				first_death;
 }	t_common;
 
 typedef struct s_philo {
 	pthread_t		pid;
-//	long long		hunger_start;//-> 철학자가 굶기 시작하는 시간
-	int				philo_number;
+	long long		hunger_start;
+	long long		get_forks;
+	long long		renewal_time;
+	int				philo_num;
 	int				lf;
 	int				rf;
-//	int				eat_cnt;//-> 철학자가 먹은 횟수
-//	int				enough;//-> 철학자가 must_eat 횟수만큼 식사했음을 나타내는 변수
-//	struct s_common	*cmn;//-> 철학자들이 공유하는 데이터 자원 구조체 포인터
+	int				me_cnt;
+	int				enough;
+	int				try_get_fork;
+	struct s_common	*cmn;
 }	t_philo;
 
 /*
