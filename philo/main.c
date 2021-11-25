@@ -1,33 +1,65 @@
 #include "philosophers.h"
 
-/*
- *		< 그 외 기능 >
- *		1. 몰라 아직 생각안함 ㅅㄱ
- *		
- *		
- *		
- *		
- */
-
-int	dining_philo(t_common *cmn)
+static void	recall_resources(t_common *cmn, t_philo *po, t_monitor *mnt)
 {
-	t_philo	*po;
-	int		i;
+	int	i;
 
-	/*
-	 *		1. po(철학자) 포인터 할당
-	 *		2. po 관련 모든 데이터 초기화(malloc 2 번 해야 함) 기능 추가
-	 *		3. 철학자 스레드 생성
-	 *		4. 초기 시작 시간, 굶주리는 시간 초기화
-	 *		5. 모두 착석 -> 각 스레드 동작 start
-	 *		6. 외부에서 스레드 검사하도록 하는 기능 추가 (상태 출력, must_eat 및 death 검사)
-	 *		7. 모든 자원 회수하는 기능 추가
-	 *		8. 현재 함수 종료
-	 */ 
+	i = -1;
+	while (++i < cmn->pn)
+		pthread_join(mnt[i].pid, NULL);
+	i = -1;
+	while (++i < cmn->pn)
+		pthread_join(po[i].pid, NULL);
+	i = -1;
+	while (++i < cmn->pn)
+		pthread_mutex_destroy(&cmn->forks[i]);
+	free(cmn->forks);
+	pthread_mutex_destroy(&cmn->stdout_mutex);
+	free(mnt);
+	free(po);
+	mnt = NULL;
+	po = NULL;
+}
+
+static int	is_all_set(t_common *cmn, t_philo *po)
+{
+	int	i;
+
+	i = -1;
+	cmn->start_time = get_time();
+	while (++i < cmn->pn)
+		po[i].hunger_start = cmn->start_time;
+	return (1);
+}
+
+static void	create_thread(t_common *cmn, t_philo *po, t_monitor *mnt)
+{
+	int	i;
+
+	i = -1;
+	while (++i < cmn->pn)
+	{
+		pthread_create(&po[i].pid, NULL, dining, (void *)&po[i]);
+		pthread_create(&mnt[i].pid, NULL, monitoring, (void *)&mnt[i]);
+	}
+}
+
+static int	dining_philo(t_common *cmn)
+{
+	t_philo		*po;
+	t_monitor	*mnt;
+
+	po = init_philo_data(cmn);
+	mnt = init_monitor_data(cmn, po);
+	if (!po || !mnt)
+		return (print_error(1, "Failed Init!"));
+	create_thread(cmn, po, mnt);
+	cmn->all_seated = is_all_set(cmn, po);
+	recall_resources(cmn, po, mnt);
 	return (0);
 }
 
-int	main(int ac, char **av)
+int			main(int ac, char **av)
 {
 	t_common	cmn;
 
@@ -35,11 +67,11 @@ int	main(int ac, char **av)
 	if (ac == 5 || ac == 6)
 	{
 		if (get_options(&cmn, ac, av))
-			return (print_error(1, "Parsing ERROR!(options)"));
+			return (print_error(1, "Parsing Error!(options)"));
 		if (dining_philo(&cmn))
-			return (print_error(1, "dining_philo() ERROR!"));
+			return (print_error(1, "dining_philo() Error!"));
 	}
 	else
-		return (print_error(1, "Parsing ERROR!"));
+		return (print_error(1, "Parsing Error!"));
 	return (0);
 }

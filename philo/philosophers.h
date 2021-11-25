@@ -18,45 +18,94 @@
  *		me == number_of_times_each_philosopher_must_eat
  */
 typedef struct s_common {
-//	pthread_mutex_t	forks;//-> 배열 뮤텍스
-//	pthread_mutex_t	stdout_mutex;//-> 출력 고정 뮤텍스
-//	long long		start_time;//-> 시스템 시작 시간
+	pthread_mutex_t	*forks;
+	pthread_mutex_t	stdout_mutex;
+	long long		start_time;
 	int				pn;
 	int				dt;
 	int				et;
 	int				st;
 	int				me;
-//	int				death;//-> 철학자가 최소 한 명 이상 죽었음을 나타내는 변수
-//	int				all_seated;//-> 모든 철학자가 테이블에 앉았음을 나타내는 변수
-//	int				all_enough;//-> 모든 철학자가 최소 must_eat 횟수만큼 식사했음을 나타내는 변수
+	int				death;
+	int				first_death;
+	int				all_seated;
+	int				all_enough;
 }	t_common;
 
 typedef struct s_philo {
 	pthread_t		pid;
-//	long long		hunger_start;//-> 철학자가 굶기 시작하는 시간
+	long long		hunger_start;
+	long long		new_time;
+	long long		base_time;
+	long long		dead_time;
 	int				philo_number;
 	int				lf;
 	int				rf;
-//	int				eat_cnt;//-> 철학자가 먹은 횟수
-//	int				enough;//-> 철학자가 must_eat 횟수만큼 식사했음을 나타내는 변수
-//	struct s_common	*cmn;//-> 철학자들이 공유하는 데이터 자원 구조체 포인터
+	int				eat_cnt;
+	int				enough;
+	struct s_common	*cmn;
 }	t_philo;
 
+typedef struct	s_monitor {
+	pthread_t		pid;
+	pthread_mutex_t	*stdout_mutex;
+	long long		*start_time;
+	long long		*hunger_start;
+	long long		dead_time;
+	long long		new_time;
+	int				*dead_philo_number;
+	int				*death;
+	int				*first_death;
+	int				*all_seated;
+	int				dt;
+}	t_monitor;
+
 /*
- *		ft.c
+ *			ft.c
  */
 int			ft_atoi(char *s);
 
 /*
- *		tools.c
+ *			tools.c
  */
 int			print_error(int ret, char *s);
-int			print_state(t_philo *po, long long ntime, char state);
+void		print_alive_state(t_philo *po, long long ntime, char state);
 long long	get_time(void);
 
 /*
- *		parsing.c
+ *			parsing.c
  */
 int			get_options(t_common *g, int ac, char **av);
+
+/*
+ *			init.c
+ */
+t_philo		*init_philo_data(t_common *cmn);
+t_monitor	*init_monitor_data(t_common *cmn, t_philo *po);
+
+/*
+ *			monitor.c
+ */
+void		*monitoring(void *info);
+
+ /*
+ *			dining.c
+ */
+void		*dining(void *info);
+
+/*
+ *			action.c
+ */
+int			get_forks(t_philo *po, int fork, int flag);
+int			philo_eat(t_philo *po);
+int			philo_sleep(t_philo *po);
+int			philo_think(t_philo *po);
+
+ /*
+ *			died.c
+ */
+void		print_dead_state(t_monitor *mnt);
+void		*died_one_philo(t_philo *po);
+void		died_philo(t_monitor *mnt);
 
 #endif
