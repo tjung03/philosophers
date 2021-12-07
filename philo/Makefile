@@ -4,8 +4,7 @@ CC = 		gcc
 
 CFLAGS =	-Wall -Wextra -Werror
 
-SRCS =		main.c parsing.c tools.c ft_atoi.c \
-			action.c died.c dining.c init.c monitor.c
+SRCS =		main.c parsing.c tools.c
 
 OBJS =		$(SRCS:.c=.o)
 

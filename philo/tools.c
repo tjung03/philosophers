@@ -1,32 +1,46 @@
-#include "philosophers.h"
+#include "philo.h"
+
+int			my_atoi(char *s)
+{
+	int	num;
+	int	i;
+
+	num = 0;
+	i = 0;
+	while (s[i])
+	{
+		num = (num * 10) + (s[i] - 48);
+		i++;
+	}
+	return (num);
+}
+
+void		print_died_state(t_philo *po)
+{
+	long long	ms_time;
+
+	ms_time = po->cmn->dead_time - po->cmn->start_time;
+	if (!po->cmn->first_death)
+	{
+		po->cmn->first_death = 1;
+		printf("%lldms [%d] died\n", ms_time, po->cmn->dead_p_num);
+	}
+}
+
+void		print_alive_state(t_philo *po, long long ntime, char *s)
+{
+	long long	ms_time;
+
+	ms_time = ntime - po->cmn->start_time;
+	if (po->cmn->is_surv && !po->cmn->is_full)
+		printf("%lldms [%d] %s\n", ms_time, po->p_num, s);
+}
 
 int			print_error(int ret, char *s)
 {
 	if (ret == 1)
 		printf("%s\n", s);
 	return (ret);
-}
-
-void		print_alive_state(t_philo *po, long long ntime, char state)
-{
-	long long	ms_time;
-
-	ms_time = ntime - po->cmn->start_time;
-	if (!po->cmn->death)
-	{
-		if (po->cmn->pn != po->cmn->all_enough)
-		{
-			printf("%lldms [%d] ", ms_time, po->philo_number);
-			if (state == 'f')
-				printf("has taken a fork\n");
-			else if (state == 'e')
-				printf("is eating\n");
-			else if (state == 's')
-				printf("is sleeping\n");
-			else if (state == 't')
-				printf("is thinking\n");
-		}
-	}
 }
 
 long long	get_time(void)

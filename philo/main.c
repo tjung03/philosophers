@@ -1,77 +1,330 @@
-#include "philosophers.h"
+#include "philo.h"
 
-static void	recall_resources(t_common *cmn, t_philo *po, t_monitor *mnt)
+void	free_malloc(t_philo *po, t_monitor *mo, pthread_mutex_t *fm, int *fs)
 {
-	int	i;
-
-	i = -1;
-	while (++i < cmn->pn)
-		pthread_join(mnt[i].pid, NULL);
-	i = -1;
-	while (++i < cmn->pn)
-		pthread_join(po[i].pid, NULL);
-	i = -1;
-	while (++i < cmn->pn)
-		pthread_mutex_destroy(&cmn->forks[i]);
-	free(cmn->forks);
-	pthread_mutex_destroy(&cmn->stdout_mutex);
-	free(mnt);
-	free(po);
-	mnt = NULL;
-	po = NULL;
+	if (po)
+		free(po);
+	if (mo)
+		free(mo);
+	if (fm)
+		free(fm);
+	if (fs)
+		free(fs);
 }
 
-static int	is_all_set(t_common *cmn, t_philo *po)
+void	init_values(t_common *cmn, t_philo *po, t_monitor *mnt, int *i)
 {
-	int	i;
-
-	i = -1;
-	cmn->start_time = get_time();
-	while (++i < cmn->pn)
-		po[i].hunger_start = cmn->start_time;
-	return (1);
+	pthread_mutex_init(&cmn->forkm[*i], NULL);
+	cmn->forks[*i] = 1;
+	po[*i].cmn = cmn;
+	po[*i].p_num = *i + 1;
+	po[*i].rf = *i;
+	if (*i != 0)
+		po[*i].lf = *i - 1;
+	else
+		po[*i].lf = cmn->nop - 1;
+	mnt[*i].check_died = &cmn->check_died;
+	mnt[*i].hunger_time = &po[*i].hunger_time;
+	mnt[*i].dead_time = &cmn->dead_time;
+	mnt[*i].dead_p_num = &cmn->dead_p_num;
+	mnt[*i].is_surv = &cmn->is_surv;
+	mnt[*i].is_full = &cmn->is_full;
+	mnt[*i].is_seat = &cmn->is_seat;
+	mnt[*i].ttd = cmn->ttd;
+	mnt[*i].m_num = *i + 1;
 }
 
-static void	create_thread(t_common *cmn, t_philo *po, t_monitor *mnt)
+void	init(t_common *cmn, t_philo *po, t_monitor *mnt)
 {
 	int	i;
 
+	pthread_mutex_init(&cmn->stdout, NULL);
+	pthread_mutex_init(&cmn->check_died, NULL);
+	memset(po, 0, sizeof(*po));
 	i = -1;
-	while (++i < cmn->pn)
+	while (++i < cmn->nop)
+		init_values(cmn, po, mnt, &i);
+}
+
+void	do_sleep(t_philo *po)
+{
+	long long	stime;
+
+	stime = po->new_time;
+	while (TRUE)
 	{
-		pthread_create(&po[i].pid, NULL, dining, (void *)&po[i]);
-		pthread_create(&mnt[i].pid, NULL, monitoring, (void *)&mnt[i]);
+		if (!po->cmn->is_surv || po->cmn->is_full)
+		{
+			if (!po->cmn->is_surv)
+			{
+				pthread_mutex_lock(&po->cmn->stdout);
+				print_died_state(po);
+				pthread_mutex_unlock(&po->cmn->stdout);
+			}
+			break ;
+		}
+		po->new_time = get_time();
+		if (po->new_time - stime >= po->cmn->tts)
+		{
+			pthread_mutex_lock(&po->cmn->stdout);
+			print_alive_state(po, po->new_time, "is thinking");
+			pthread_mutex_unlock(&po->cmn->stdout);
+			break ;
+		}
 	}
 }
 
-static int	dining_philo(t_common *cmn)
+void	put_down(t_philo *po)
+{
+	pthread_mutex_unlock(&po->cmn->forkm[po->rf]);
+	po->cmn->forks[po->rf] = 1;
+	pthread_mutex_unlock(&po->cmn->forkm[po->lf]);
+	po->cmn->forks[po->lf] = 1;
+}
+
+void	check_full(t_philo *po)
+{
+	po->eat_cnt++;
+	if (po->cmn->pme != -1 && po->eat_cnt == po->cmn->pme)
+		po->cmn->full_cnt += ++po->full;
+	if (po->cmn->full_cnt == po->cmn->nop)
+		po->cmn->is_full = 1;
+}
+
+void	eat(t_philo *po)
+{
+	po->hunger_time = po->new_time;
+	pthread_mutex_lock(&po->cmn->stdout);
+	print_alive_state(po, po->new_time, "is eating");
+	pthread_mutex_unlock(&po->cmn->stdout);
+	check_full(po);
+	while (TRUE)
+	{
+		if (!po->cmn->is_surv || po->cmn->is_full)
+		{
+			if (!po->cmn->is_surv)
+			{
+				put_down(po);
+				pthread_mutex_lock(&po->cmn->stdout);
+				print_died_state(po);
+				pthread_mutex_unlock(&po->cmn->stdout);
+			}
+			break ;
+		}
+		po->new_time = get_time();
+		if (po->new_time - po->hunger_time >= po->cmn->tte)
+		{
+			put_down(po);
+			pthread_mutex_lock(&po->cmn->stdout);
+			print_alive_state(po, po->new_time, "is sleeping");
+			pthread_mutex_unlock(&po->cmn->stdout);
+			break ;
+		}
+	}
+}
+
+void	get_forks(t_philo *po)
+{
+	int	get_fork;
+
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->lf]);
+	if (!get_fork)
+	{
+		po->cmn->forks[po->lf] = 0;
+		po->new_time = get_time();
+		pthread_mutex_lock(&po->cmn->stdout);
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+	usleep(100);
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->rf]);
+	if (!get_fork)
+	{
+		po->cmn->forks[po->rf] = 0;
+		po->new_time = get_time();
+		pthread_mutex_lock(&po->cmn->stdout);
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+}
+
+void	pick_up(t_philo *po)
+{
+	while (TRUE)
+	{
+		if (!po->cmn->is_surv || po->cmn->is_full)
+		{
+			if (!po->cmn->is_surv)
+			{
+				pthread_mutex_lock(&po->cmn->stdout);
+				print_died_state(po);
+				pthread_mutex_unlock(&po->cmn->stdout);
+			}
+			break ;
+		}
+		usleep(100);
+		if (po->cmn->forks[po->lf] && po->cmn->forks[po->rf])
+		{
+			get_forks(po);
+			break ;
+		}
+	}
+}
+
+int	action(t_philo *po)
+{
+	if (!(po->p_num % 2) && !po->eat_cnt)
+	{
+		while (TRUE)
+		{
+			if (get_time() - po->cmn->start_time >= po->cmn->tte)
+				break ;
+		}
+	}
+	pick_up(po);
+	eat(po);
+	do_sleep(po);
+	if (po->cmn->is_full)
+		return (0);
+	return (po->cmn->is_surv);
+}
+
+void	*start_dining(void *info)
+{
+	t_philo *po;
+
+	po = (t_philo *)info;
+	while (TRUE)
+	{
+		if (po->cmn->nop == 1)
+		{
+			if (po->cmn->pme)
+			{
+				printf("0ms [1] has taken a fork\n");
+				printf("%dms [1] died\n", po->cmn->ttd);
+			}
+			break ;
+		}
+		if (po->cmn->is_seat)
+		{
+			if (po->cmn->pme == 0)
+				break ;
+			if (!action(po))
+				break ;
+		}
+	}
+	return (NULL);
+}
+
+void	*monitoring(void *info)
+{
+	t_monitor *mnt;
+
+	mnt = (t_monitor *)info;
+	while (TRUE)
+	{
+		if (*mnt->is_seat)
+		{
+			if (!(*mnt->is_surv) || *mnt->is_full)
+				break ;
+			mnt->new_time = get_time();
+			if (mnt->new_time - *mnt->hunger_time >= mnt->ttd)
+			{
+				pthread_mutex_lock(mnt->check_died);
+				if (*mnt->is_surv)
+				{
+					*mnt->dead_time = mnt->new_time;
+					*mnt->dead_p_num = mnt->m_num;
+				}
+				*mnt->is_surv = 0;
+				pthread_mutex_unlock(mnt->check_died);
+				break ;
+			}
+		}
+	}
+	return (NULL);
+}
+
+void	create_thread(t_common *cmn, t_philo *po, t_monitor *mnt)
+{
+	int	i;
+
+	i = -1;
+	while (++i < cmn->nop)
+	{
+		pthread_create(&po[i].tid, NULL, start_dining, (void *)&po[i]);
+		if (cmn->nop > 1 && (cmn->pme > 0 || cmn->pme == -1))
+			pthread_create(&mnt[i].tid, NULL, monitoring, (void *)&mnt[i]);
+		usleep(100);
+	}
+}
+
+int	is_all_set(t_common *cmn, t_philo *po)
+{
+	int		i;
+
+	cmn->is_surv = 1;
+	cmn->start_time = get_time();
+	i = -1;
+	while (++i < cmn->nop)
+		po[i].hunger_time = cmn->start_time;
+	return (1);
+}
+
+void	recall_resources(t_common *cmn, t_philo *po, t_monitor *mnt)
+{
+	int	i;
+
+	i = -1;
+	while (++i < cmn->nop)
+		pthread_join(mnt[i].tid, NULL);
+	i = -1;
+	while (++i < cmn->nop)
+		pthread_join(po[i].tid, NULL);
+	pthread_mutex_destroy(&cmn->stdout);
+	pthread_mutex_destroy(&cmn->check_died);
+	i = -1;
+	while (++i < cmn->nop)
+		pthread_mutex_destroy(&cmn->forkm[i]);
+	free(cmn->forkm);
+	free(cmn->forks);
+	free(po);
+	free(mnt);
+}
+
+int	simulation(t_common *cmn)
 {
 	t_philo		*po;
 	t_monitor	*mnt;
 
-	po = init_philo_data(cmn);
-	mnt = init_monitor_data(cmn, po);
-	if (!po || !mnt)
-		return (print_error(1, "Failed Init!"));
+	mnt = (t_monitor *)malloc(sizeof(t_monitor) * cmn->nop);
+	po = (t_philo *)malloc(sizeof(t_philo) * cmn->nop);
+	cmn->forkm = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * cmn->nop);
+	cmn->forks = (int *)malloc(sizeof(int) * cmn->nop);
+	if (!mnt || !po || !cmn->forkm || !cmn->forks)
+	{
+		free_malloc(po, mnt, cmn->forkm, cmn->forks);
+		return (print_error(1, "Malloc Error!"));
+	}
+	init(cmn, po, mnt);
 	create_thread(cmn, po, mnt);
-	cmn->all_seated = is_all_set(cmn, po);
+	cmn->is_seat = is_all_set(cmn, po);
 	recall_resources(cmn, po, mnt);
+	po = NULL;
+	mnt = NULL;
 	return (0);
 }
 
-int			main(int ac, char **av)
+int	main(int ac, char **av)
 {
 	t_common	cmn;
 
 	memset(&cmn, 0, sizeof(cmn));
-	if (ac == 5 || ac == 6)
-	{
-		if (get_options(&cmn, ac, av))
-			return (print_error(1, "Parsing Error!(options)"));
-		if (dining_philo(&cmn))
-			return (print_error(1, "dining_philo() Error!"));
-	}
-	else
+	if (ac != 5 && ac != 6)
 		return (print_error(1, "Parsing Error!"));
+	if (get_options(&cmn, ac, av))
+		return (print_error(1, "Get option Error!"));
+	if (simulation(&cmn))
+		return (print_error(1, "Simulation Error!"));
 	return (0);
 }
