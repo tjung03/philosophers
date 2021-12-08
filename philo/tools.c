@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   tools.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/12/08 14:28:30 by tjung             #+#    #+#             */
+/*   Updated: 2021/12/08 14:30:59 by tjung            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-int			my_atoi(char *s)
+int	my_atoi(char *s)
 {
 	int	num;
 	int	i;
@@ -15,7 +27,7 @@ int			my_atoi(char *s)
 	return (num);
 }
 
-void		print_died_state(t_philo *po)
+void	print_died_state(t_philo *po)
 {
 	long long	ms_time;
 
@@ -27,7 +39,7 @@ void		print_died_state(t_philo *po)
 	}
 }
 
-void		print_alive_state(t_philo *po, long long ntime, char *s)
+void	print_alive_state(t_philo *po, long long ntime, char *s)
 {
 	long long	ms_time;
 
@@ -36,7 +48,7 @@ void		print_alive_state(t_philo *po, long long ntime, char *s)
 		printf("%lldms [%d] %s\n", ms_time, po->p_num, s);
 }
 
-int			print_error(int ret, char *s)
+int	print_error(int ret, char *s)
 {
 	if (ret == 1)
 		printf("%s\n", s);

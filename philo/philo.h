@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/12/08 14:28:25 by tjung             #+#    #+#             */
+/*   Updated: 2021/12/08 20:40:18 by tjung            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 
@@ -7,8 +19,6 @@
 # include <unistd.h>
 # include <pthread.h>
 # include <sys/time.h>
-
-# define TRUE 1
 
 typedef struct s_common {
 	pthread_mutex_t	stdout;
@@ -27,7 +37,7 @@ typedef struct s_common {
 	int				is_surv;
 	int				is_full;
 	int				full_cnt;
-	int				is_seat;
+//	int				is_seat;
 }	t_common;
 
 typedef struct s_philo {
@@ -42,7 +52,7 @@ typedef struct s_philo {
 	int				full;
 }	t_philo;
 
-typedef struct	s_monitor {
+typedef struct s_monitor {
 	pthread_t		tid;
 	pthread_mutex_t	*check_died;
 	long long		*hunger_time;

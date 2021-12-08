@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/12/08 14:28:27 by tjung             #+#    #+#             */
+/*   Updated: 2021/12/08 21:31:59 by tjung            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	free_malloc(t_philo *po, t_monitor *mo, pthread_mutex_t *fm, int *fs)
@@ -29,7 +41,6 @@ void	init_values(t_common *cmn, t_philo *po, t_monitor *mnt, int *i)
 	mnt[*i].dead_p_num = &cmn->dead_p_num;
 	mnt[*i].is_surv = &cmn->is_surv;
 	mnt[*i].is_full = &cmn->is_full;
-	mnt[*i].is_seat = &cmn->is_seat;
 	mnt[*i].ttd = cmn->ttd;
 	mnt[*i].m_num = *i + 1;
 }
@@ -51,7 +62,7 @@ void	do_sleep(t_philo *po)
 	long long	stime;
 
 	stime = po->new_time;
-	while (TRUE)
+	while (1)
 	{
 		if (!po->cmn->is_surv || po->cmn->is_full)
 		{
@@ -77,8 +88,8 @@ void	do_sleep(t_philo *po)
 void	put_down(t_philo *po)
 {
 	pthread_mutex_unlock(&po->cmn->forkm[po->rf]);
-	po->cmn->forks[po->rf] = 1;
 	pthread_mutex_unlock(&po->cmn->forkm[po->lf]);
+	po->cmn->forks[po->rf] = 1;
 	po->cmn->forks[po->lf] = 1;
 }
 
@@ -98,7 +109,7 @@ void	eat(t_philo *po)
 	print_alive_state(po, po->new_time, "is eating");
 	pthread_mutex_unlock(&po->cmn->stdout);
 	check_full(po);
-	while (TRUE)
+	while (1)
 	{
 		if (!po->cmn->is_surv || po->cmn->is_full)
 		{
@@ -123,6 +134,7 @@ void	eat(t_philo *po)
 	}
 }
 
+/*
 void	get_forks(t_philo *po)
 {
 	int	get_fork;
@@ -130,19 +142,67 @@ void	get_forks(t_philo *po)
 	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->lf]);
 	if (!get_fork)
 	{
+		pthread_mutex_lock(&po->cmn->stdout);
 		po->cmn->forks[po->lf] = 0;
 		po->new_time = get_time();
-		pthread_mutex_lock(&po->cmn->stdout);
 		print_alive_state(po, po->new_time, "has taken a fork");
 		pthread_mutex_unlock(&po->cmn->stdout);
 	}
-	usleep(100);
 	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->rf]);
 	if (!get_fork)
 	{
+		pthread_mutex_lock(&po->cmn->stdout);
 		po->cmn->forks[po->rf] = 0;
 		po->new_time = get_time();
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+}
+*/
+
+void	get_odd_forks(t_philo *po)
+{
+	int	get_fork;
+
+	po->cmn->forks[po->rf] = 0;
+	po->cmn->forks[po->lf] = 0;
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->rf]);
+	if (!get_fork)
+	{
 		pthread_mutex_lock(&po->cmn->stdout);
+		po->new_time = get_time();
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->lf]);
+	if (!get_fork)
+	{
+		pthread_mutex_lock(&po->cmn->stdout);
+		po->new_time = get_time();
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+}
+
+void	get_even_forks(t_philo *po)
+{
+	int	get_fork;
+
+	po->cmn->forks[po->lf] = 0;
+	po->cmn->forks[po->rf] = 0;
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->lf]);
+	if (!get_fork)
+	{
+		pthread_mutex_lock(&po->cmn->stdout);
+		po->new_time = get_time();
+		print_alive_state(po, po->new_time, "has taken a fork");
+		pthread_mutex_unlock(&po->cmn->stdout);
+	}
+	get_fork = pthread_mutex_lock(&po->cmn->forkm[po->rf]);
+	if (!get_fork)
+	{
+		pthread_mutex_lock(&po->cmn->stdout);
+		po->new_time = get_time();
 		print_alive_state(po, po->new_time, "has taken a fork");
 		pthread_mutex_unlock(&po->cmn->stdout);
 	}
@@ -150,7 +210,7 @@ void	get_forks(t_philo *po)
 
 void	pick_up(t_philo *po)
 {
-	while (TRUE)
+	while (1)
 	{
 		if (!po->cmn->is_surv || po->cmn->is_full)
 		{
@@ -165,7 +225,10 @@ void	pick_up(t_philo *po)
 		usleep(100);
 		if (po->cmn->forks[po->lf] && po->cmn->forks[po->rf])
 		{
-			get_forks(po);
+			if (po->p_num % 2)
+				get_odd_forks(po);
+			else
+				get_even_forks(po);
 			break ;
 		}
 	}
@@ -175,13 +238,17 @@ int	action(t_philo *po)
 {
 	if (!(po->p_num % 2) && !po->eat_cnt)
 	{
-		while (TRUE)
+		while (1)
 		{
-			if (get_time() - po->cmn->start_time >= po->cmn->tte)
+			if (get_time() - po->cmn->start_time >= po->cmn->tte + 1)
 				break ;
 		}
 	}
 	pick_up(po);
+	if (po->cmn->nop % 2 == 0)
+	{
+		
+	}
 	eat(po);
 	do_sleep(po);
 	if (po->cmn->is_full)
@@ -191,10 +258,10 @@ int	action(t_philo *po)
 
 void	*start_dining(void *info)
 {
-	t_philo *po;
+	t_philo	*po;
 
 	po = (t_philo *)info;
-	while (TRUE)
+	while (1)
 	{
 		if (po->cmn->nop == 1)
 		{
@@ -205,41 +272,35 @@ void	*start_dining(void *info)
 			}
 			break ;
 		}
-		if (po->cmn->is_seat)
-		{
-			if (po->cmn->pme == 0)
-				break ;
-			if (!action(po))
-				break ;
-		}
+		if (po->cmn->pme == 0)
+			break ;
+		if (!action(po))
+			break ;
 	}
 	return (NULL);
 }
 
 void	*monitoring(void *info)
 {
-	t_monitor *mnt;
+	t_monitor	*mnt;
 
 	mnt = (t_monitor *)info;
-	while (TRUE)
+	while (1)
 	{
-		if (*mnt->is_seat)
+		if (!(*mnt->is_surv) || *mnt->is_full)
+			break ;
+		mnt->new_time = get_time();
+		if (mnt->new_time - *mnt->hunger_time >= mnt->ttd)
 		{
-			if (!(*mnt->is_surv) || *mnt->is_full)
-				break ;
-			mnt->new_time = get_time();
-			if (mnt->new_time - *mnt->hunger_time >= mnt->ttd)
+			pthread_mutex_lock(mnt->check_died);
+			if (*mnt->is_surv)
 			{
-				pthread_mutex_lock(mnt->check_died);
-				if (*mnt->is_surv)
-				{
-					*mnt->dead_time = mnt->new_time;
-					*mnt->dead_p_num = mnt->m_num;
-				}
-				*mnt->is_surv = 0;
-				pthread_mutex_unlock(mnt->check_died);
-				break ;
+				*mnt->dead_time = mnt->new_time;
+				*mnt->dead_p_num = mnt->m_num;
 			}
+			*mnt->is_surv = 0;
+			pthread_mutex_unlock(mnt->check_died);
+			break ;
 		}
 	}
 	return (NULL);
@@ -249,26 +310,17 @@ void	create_thread(t_common *cmn, t_philo *po, t_monitor *mnt)
 {
 	int	i;
 
-	i = -1;
-	while (++i < cmn->nop)
-	{
-		pthread_create(&po[i].tid, NULL, start_dining, (void *)&po[i]);
-		if (cmn->nop > 1 && (cmn->pme > 0 || cmn->pme == -1))
-			pthread_create(&mnt[i].tid, NULL, monitoring, (void *)&mnt[i]);
-		usleep(100);
-	}
-}
-
-int	is_all_set(t_common *cmn, t_philo *po)
-{
-	int		i;
-
 	cmn->is_surv = 1;
 	cmn->start_time = get_time();
 	i = -1;
 	while (++i < cmn->nop)
+	{
+		pthread_create(&po[i].tid, NULL, start_dining, (void *)&po[i]);
 		po[i].hunger_time = cmn->start_time;
-	return (1);
+		if (cmn->nop > 1 && (cmn->pme > 0 || cmn->pme == -1))
+			pthread_create(&mnt[i].tid, NULL, monitoring, (void *)&mnt[i]);
+		usleep(100);
+	}
 }
 
 void	recall_resources(t_common *cmn, t_philo *po, t_monitor *mnt)
@@ -308,7 +360,6 @@ int	simulation(t_common *cmn)
 	}
 	init(cmn, po, mnt);
 	create_thread(cmn, po, mnt);
-	cmn->is_seat = is_all_set(cmn, po);
 	recall_resources(cmn, po, mnt);
 	po = NULL;
 	mnt = NULL;
