@@ -6,7 +6,7 @@
 /*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/08 14:28:25 by tjung             #+#    #+#             */
-/*   Updated: 2021/12/08 20:40:18 by tjung            ###   ########.fr       */
+/*   Updated: 2021/12/09 21:49:11 by tjung            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 
 typedef struct s_common {
 	pthread_mutex_t	stdout;
-	pthread_mutex_t	check_died;
 	pthread_mutex_t	*forkm;
 	int				*forks;
 	long long		start_time;
@@ -37,7 +36,6 @@ typedef struct s_common {
 	int				is_surv;
 	int				is_full;
 	int				full_cnt;
-//	int				is_seat;
 }	t_common;
 
 typedef struct s_philo {
@@ -52,32 +50,51 @@ typedef struct s_philo {
 	int				full;
 }	t_philo;
 
-typedef struct s_monitor {
-	pthread_t		tid;
-	pthread_mutex_t	*check_died;
-	long long		*hunger_time;
-	long long		*dead_time;
-	long long		new_time;
-	int				*dead_p_num;
-	int				*is_surv;
-	int				*is_full;
-	int				*is_seat;
-	int				ttd;
-	int				m_num;
-}	t_monitor;
+/*
+ *			print.c
+ */
+int			print_error(int ret, char *s);
+void		print_alive_state(t_philo *po, long long ntime, char *s);
+void		print_died_state(t_philo *po);
 
 /*
  *			tools.c
  */
-void		print_alive_state(t_philo *po, long long ntime, char *s);
-void		print_died_state(t_philo *po);
 long long	get_time(void);
-int			print_error(int ret, char *s);
+long long	waiting(t_philo *po, long long start, long long standard);
 int			my_atoi(char *s);
 
 /*
  *			parsing.c
  */
 int			get_options(t_common *cmn, int ac, char **av);
+
+/*
+ *			recall.c
+ */
+void		free_malloc_by_failed(t_common *cmn, t_philo *po);
+void		recall_resources(t_common *cmn, t_philo *po);
+
+/*
+ *			init.c
+ */
+void		init(t_common *cmn, t_philo *po);
+
+/*
+ *			thread.c
+ */
+void		create_thread(t_common *cmn, t_philo *po, pthread_t *mnt_tid);
+
+/*
+ *			action_dining.c
+ */
+int			action_dining(t_philo *po);
+
+/*
+ *			action_get_forks.c
+ */
+void		odd_pick_up(t_philo *po);
+void		even_pick_up(t_philo *po);
+void		put_down(t_philo *po);
 
 #endif
