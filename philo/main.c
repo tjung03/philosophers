@@ -6,7 +6,7 @@
 /*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/08 14:28:27 by tjung             #+#    #+#             */
-/*   Updated: 2021/12/09 04:20:51 by tjung            ###   ########.fr       */
+/*   Updated: 2021/12/10 22:34:10 by tjung            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,19 @@
 int	simulation(t_common *cmn)
 {
 	t_philo		*po;
-	pthread_t	mnt_tid;
+	pthread_t	*mnt_id;
 
 	po = (t_philo *)malloc(sizeof(t_philo) * cmn->nop);
+	mnt_id = (pthread_t *)malloc(sizeof(pthread_t) * 2);
 	cmn->forkm = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * cmn->nop);
-	cmn->forks = (int *)malloc(sizeof(int) * cmn->nop);
-	if (!po || !cmn->forkm || !cmn->forks)
+	if (!po || !mnt_id || !cmn->forkm)
 	{
-		free_malloc_by_failed(cmn, po);
+		failed_free(po, mnt_id, cmn->forkm);
 		return (print_error(1, "Malloc Error!"));
 	}
 	init(cmn, po);
-	create_thread(cmn, po, &mnt_tid);
-	recall_resources(cmn, po);
-	po = NULL;
+	create_thread(cmn, po, mnt_id);
+	recall_resources(cmn, po, mnt_id);
 	return (0);
 }
 

@@ -6,7 +6,7 @@
 /*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/09 00:46:57 by tjung             #+#    #+#             */
-/*   Updated: 2021/12/09 21:33:16 by tjung            ###   ########.fr       */
+/*   Updated: 2021/12/11 01:24:08 by tjung            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,17 +20,34 @@ static void	*start_dining(void *info)
 	if (po->cmn->nop == 1 && po->cmn->pme)
 	{
 		printf("0ms [1] has taken a fork\n");
+		while (po->cmn->ttd > get_time() - po->cmn->start_time)
+			usleep(1000);
 		printf("%dms [1] died\n", po->cmn->ttd);
 		return (NULL);
 	}
 	if (!(po->p_num % 2))
-		waiting(po, po->cmn->start_time, po->cmn->tte);
-	while (po->cmn->is_surv)
+		while (po->cmn->tte > get_time() - po->cmn->start_time)
+			usleep(1000);
+	while (po->cmn->is_surv && po->cmn->pme)
 	{
-		if (!po->cmn->pme)
-			break ;
-		if (!action_dining(po))
-			break ;
+		pick_up(po);
+		eat(po);
+		do_sleep(po);
+		think(po);
+	}
+	return (NULL);
+}
+
+static void	*monitoring_must_eat(void *info)
+{
+	t_common	*mme;
+
+	mme = (t_common *)info;
+	while (mme->is_surv)
+	{
+		if (mme->full_cnt == mme->nop)
+			mme->is_surv = 0;
+		usleep(1000);
 	}
 	return (NULL);
 }
@@ -45,26 +62,24 @@ static void	*monitoring(void *info)
 	i = -1;
 	while (mnt[++i].cmn->is_surv)
 	{
-		if (mnt[i].cmn->is_full)
-			break ;
 		ms_time = get_time();
-		if (ms_time - mnt[i].hunger_time >= mnt[i].cmn->ttd)
+		if (mnt[i].cmn->ttd < ms_time - mnt[i].hunger_time)
 		{
-			if (mnt[i].cmn->is_surv)
-			{
-				mnt[i].cmn->is_surv = 0;
-				mnt[i].cmn->dead_p_num = mnt[i].p_num;
-				mnt[i].cmn->dead_time = ms_time;
-			}
-			break ;
+			pthread_mutex_unlock(&mnt[i].cmn->stdout);
+			mnt[i].cmn->is_surv = 0;
+			pthread_mutex_lock(&mnt[i].cmn->stdout);
+			printf("%lldms\t[%d]\t%s\n", \
+			ms_time - mnt[i].cmn->start_time, mnt[i].p_num, "died");
+			pthread_mutex_unlock(&mnt[i].cmn->stdout);
 		}
 		if (mnt[i].cmn->nop == i + 1)
 			i = -1;
+		usleep(1000);
 	}
 	return (NULL);
 }
 
-void	create_thread(t_common *cmn, t_philo *po, pthread_t *mnt_tid)
+void	create_thread(t_common *cmn, t_philo *po, pthread_t *mnt_id)
 {
 	int	i;
 
@@ -77,7 +92,12 @@ void	create_thread(t_common *cmn, t_philo *po, pthread_t *mnt_tid)
 	}
 	if (cmn->nop > 1 && (cmn->pme > 0 || cmn->pme == -1))
 	{
-		pthread_create(mnt_tid, NULL, monitoring, (void *)po);
-		pthread_detach(*mnt_tid);
+		pthread_create(&mnt_id[0], NULL, monitoring, (void *)po);
+		pthread_detach(mnt_id[0]);
+		if (cmn->pme > 0)
+		{
+			pthread_create(&mnt_id[1], NULL, monitoring_must_eat, (void *)cmn);
+			pthread_detach(mnt_id[1]);
+		}
 	}
 }

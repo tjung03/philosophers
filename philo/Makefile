@@ -6,7 +6,7 @@
 #    By: tjung <tjung@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/12/08 14:28:17 by tjung             #+#    #+#              #
-#    Updated: 2021/12/09 18:49:09 by tjung            ###   ########.fr        #
+#    Updated: 2021/12/11 01:09:05 by tjung            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,9 @@ CC = 		gcc
 
 CFLAGS =	-Wall -Wextra -Werror
 
-SRCS =		main.c parsing.c tools.c action_dining.c action_get_forks.c init.c print.c recall.c thread.c
+SRCS =		main.c tools.c parsing.c \
+			init.c thread.c recall.c \
+			action_dining.c
 
 OBJS =		$(SRCS:.c=.o)
 
