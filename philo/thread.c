@@ -6,7 +6,7 @@
 /*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/09 00:46:57 by tjung             #+#    #+#             */
-/*   Updated: 2021/12/11 01:24:08 by tjung            ###   ########.fr       */
+/*   Updated: 2021/12/11 15:08:54 by tjung            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ static void	*monitoring(void *info)
 		ms_time = get_time();
 		if (mnt[i].cmn->ttd < ms_time - mnt[i].hunger_time)
 		{
-			pthread_mutex_unlock(&mnt[i].cmn->stdout);
 			mnt[i].cmn->is_surv = 0;
 			pthread_mutex_lock(&mnt[i].cmn->stdout);
 			printf("%lldms\t[%d]\t%s\n", \

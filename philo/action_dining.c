@@ -6,7 +6,7 @@
 /*   By: tjung <tjung@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/09 16:29:51 by tjung             #+#    #+#             */
-/*   Updated: 2021/12/11 01:23:56 by tjung            ###   ########.fr       */
+/*   Updated: 2021/12/11 15:10:45 by tjung            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,13 @@ void	do_sleep(t_philo *po)
 void	eat(t_philo *po)
 {
 	pthread_mutex_lock(&po->cmn->stdout);
+	po->eat_cnt++;
+	if (po->cmn->pme != -1 && po->eat_cnt == po->cmn->pme)
+		po->cmn->full_cnt += ++po->full;
 	po->hunger_time = get_time();
 	if (po->cmn->is_surv)
 		printf("%lldms\t[%d]\t%s\n", \
 		po->hunger_time - po->cmn->start_time, po->p_num, "is eating");
-	po->eat_cnt++;
-	if (po->cmn->pme != -1 && po->eat_cnt == po->cmn->pme)
-		po->cmn->full_cnt += ++po->full;
 	pthread_mutex_unlock(&po->cmn->stdout);
 	while (po->cmn->tte > get_time() - po->hunger_time)
 		usleep(1000);
