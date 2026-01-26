@@ -246,7 +246,7 @@ typedef struct s_common {
 void    init(t_common *cmn, t_philo *po)
 {
     pthread_mutex_init(&cmn->stdout, NULL);
-    pthread_mutex_init(&cmn->state, NULL); // ✅ state mutex 초기화
+    pthread_mutex_init(&cmn->state, NULL); // state mutex 초기화
 
     pthread_mutex_lock(&cmn->state);
     cmn->is_surv = 1;
