@@ -15,7 +15,7 @@
 | [init.c](../philo/init.c)의 `memset(po, 0, sizeof(*po))` | 첫 번째 철학자만 0으로 초기화합니다. 나머지 철학자의 `eat_cnt`, `full` 초기값이 설정되지 않아 식사 횟수 판정에 영향을 줄 수 있습니다. |
 | [thread.c](../philo/thread.c)의 모니터와 행동 루프 | `is_surv`, `hunger_time`, `full_cnt`의 읽기·쓰기가 같은 잠금으로 보호되지 않아 데이터 레이스가 발생할 수 있습니다. |
 | [action_dining.c](../philo/action_dining.c)의 포크 획득 | 모든 철학자가 오른쪽 다음 왼쪽 순서로 잠급니다. 짝수의 초기 지연만으로 교착 방지가 보장되지는 않습니다. |
-| [recall.c](../philo/recall.c)의 자원 회수 | 철학자 스레드만 합류한 뒤 공유 자원을 해제합니다. detach한 모니터의 종료를 기다리는 절차가 없습니다. |
+| [recall.c](../philo/recall.c)의 자원 회수 | 철학자 스레드의 종료만 기다린 뒤 공유 자원을 해제합니다. detach한 모니터의 종료를 기다리는 절차가 없습니다. |
 
 ## 이전 분석
 
