@@ -6,29 +6,7 @@ C와 POSIX Threads로 구현한 식사하는 철학자 시뮬레이션입니다.
 
 ## 동시성 구조
 
-```mermaid
-flowchart LR
-    P["Philosopher Thread i"]
-    RF["오른쪽 Fork Mutex"]
-    LF["왼쪽 Fork Mutex"]
-    PS["철학자별 상태<br/>hunger_time · eat_cnt"]
-    CS["공통 상태<br/>full_cnt · is_surv"]
-    OUT["stdout Mutex"]
-    M1["생존 Monitor Thread"]
-    M2["식사 횟수 Monitor Thread<br/>(목표 횟수 지정 시)"]
-
-    P -->|"lock"| RF
-    P -->|"lock"| LF
-    P -->|"식사 시 갱신"| PS
-    P -->|"목표 횟수 도달 시 갱신"| CS
-    P -->|"상태 출력"| OUT
-
-    M1 -->|"각 철학자의 마지막 식사 시각 검사"| PS
-    M1 -->|"사망 시 is_surv 변경"| CS
-    M1 -->|"사망 출력"| OUT
-
-    M2 -->|"full_cnt 검사"| CS
-```
+![철학자 Thread, 공유 Fork Mutex, 철학자별 상태와 공통 상태, Monitor Thread의 관계](docs/images/concurrency-structure.svg)
 
 각 철학자 Thread는 자신에게 할당된 오른쪽·왼쪽 Fork Mutex를 차례로 잠근 뒤 식사하고 해제합니다. Fork는 이웃 철학자와 공유됩니다. `hunger_time`과 `eat_cnt`는 철학자별 상태이며, `full_cnt`와 `is_surv`는 공통 상태입니다. 생존 Monitor가 철학자별 마지막 식사 시각을 순회해 사망 조건을 확인하고, 최소 식사 횟수를 지정한 경우에는 별도 Monitor가 목표 달성 인원도 확인합니다.
 
