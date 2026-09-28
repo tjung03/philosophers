@@ -6,9 +6,17 @@ C와 POSIX Threads로 구현한 식사하는 철학자 시뮬레이션입니다.
 
 ## 동시성 구조
 
-![철학자 Thread, 공유 Fork Mutex, 철학자별 상태와 공통 상태, Monitor Thread의 관계](docs/images/concurrency-structure.svg)
+### Fork 공유
 
-각 철학자 Thread는 자신에게 할당된 오른쪽·왼쪽 Fork Mutex를 차례로 잠근 뒤 식사하고 해제합니다. Fork는 이웃 철학자와 공유됩니다. `hunger_time`과 `eat_cnt`는 철학자별 상태이며, `full_cnt`와 `is_surv`는 공통 상태입니다. 생존 Monitor가 철학자별 마지막 식사 시각을 순회해 사망 조건을 확인하고, 최소 식사 횟수를 지정한 경우에는 별도 Monitor가 목표 달성 인원도 확인합니다.
+![각 Philosopher Thread가 양옆의 Fork Mutex를 이웃과 공유하는 구조](docs/images/concurrency-structure.svg)
+
+각 철학자 Thread는 자신에게 할당된 오른쪽·왼쪽 Fork Mutex를 차례로 잠근 뒤 식사하고 해제합니다. 두 Fork는 각각 이웃 철학자와 공유됩니다.
+
+### 상태와 Monitor
+
+![철학자별 상태와 공통 상태를 생존 Monitor 및 식사 횟수 Monitor가 확인하는 구조](docs/images/monitor-state.svg)
+
+`hunger_time`과 `eat_cnt`는 철학자별 상태이며, `full_cnt`와 `is_surv`는 공통 상태입니다. 생존 Monitor는 마지막 식사 시각을 확인해 사망 조건을 판단하고, 최소 식사 횟수를 지정한 경우 별도 Monitor가 목표 달성 인원을 확인합니다. 출력 구간은 공통 `stdout` Mutex로 직렬화합니다.
 
 ## 코드 구조
 
