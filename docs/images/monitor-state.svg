@@ -13,16 +13,17 @@
 <text x="102" y="176" font-size="18" font-weight="700" fill="#086b62">철학자별 상태</text>
 <text x="102" y="204" font-size="14" fill="#263a54">hunger_time · eat_cnt</text>
 
-<rect x="80" y="245" width="230" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/>
-<text x="102" y="280" font-size="18" font-weight="700" fill="#086b62">공통 상태</text>
-<text x="205" y="280" font-size="14" fill="#263a54">full_cnt · is_surv</text>
+<rect x="80" y="245" width="230" height="78" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="102" y="276" font-size="18" font-weight="700" fill="#086b62">공통 상태</text>
+<text x="102" y="304" font-size="14" fill="#263a54">full_cnt · is_surv</text>
 
 <rect x="455" y="145" width="230" height="78" rx="10" fill="#fff" stroke="#cbd5e1"/>
 <text x="477" y="176" font-size="18" font-weight="700" fill="#086b62">생존 Monitor</text>
 <text x="477" y="204" font-size="14" fill="#263a54">마지막 식사 시각 검사</text>
 
-<rect x="455" y="245" width="230" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/>
-<text x="477" y="280" font-size="18" font-weight="700" fill="#086b62">식사 횟수 Monitor</text>
+<rect x="455" y="245" width="230" height="78" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="477" y="276" font-size="18" font-weight="700" fill="#086b62">식사 횟수 Monitor</text>
+<text x="477" y="304" font-size="14" fill="#263a54">full_cnt 확인</text>
 
 <rect x="790" y="175" width="130" height="100" rx="10" fill="#fff6ea" stroke="#e5cba9"/>
 <text x="812" y="207" font-size="17" font-weight="700" fill="#946018">종료 상태</text>
@@ -30,9 +31,9 @@
 <text x="812" y="257" font-size="14" fill="#263a54">목표 식사 완료</text>
 
 <path d="M310 184 H445" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M310 274 H445" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M310 284 H445" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <path d="M685 184 H750 V225 H780" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M685 274 H750 V245 H780" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M685 284 H750 V245 H780" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 
 <text x="80" y="358" font-size="14" fill="#475569">stdout Mutex는 Philosopher와 Monitor의 상태 출력 구간을 직렬화</text>
 </g></svg>
