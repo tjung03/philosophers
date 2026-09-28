@@ -1,21 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" role="img" aria-labelledby="title desc">
-<title id="title">philosophers · 동시성 구조</title><desc id="desc">각 Philosopher Thread는 양옆 Fork Mutex를 잠그고 식사하며 hunger_time과 eat_cnt를 갱신한다. 생존 Monitor는 마지막 식사 시각을 검사하고, 목표 횟수 Monitor는 full_cnt를 검사한다.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="550" viewBox="0 0 1000 550" role="img" aria-labelledby="title desc">
+<title id="title">philosophers · 동시성 구조</title><desc id="desc">각 Philosopher Thread는 오른쪽과 왼쪽 Fork Mutex를 순서대로 잠근 뒤 식사한다. 식사 시 철학자별 hunger_time과 eat_cnt를 갱신하고, 목표 횟수에 도달하면 공통 full_cnt를 갱신한다. 생존 Monitor와 식사 횟수 Monitor는 각각 철학자별 상태와 공통 상태를 확인한다.</desc>
 <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#64748b"/></marker></defs>
-<rect width="1000" height="500" rx="16" fill="#f8fafc"/><g font-family="Arial,'Noto Sans CJK KR','Malgun Gothic',sans-serif">
+<rect width="1000" height="550" rx="16" fill="#f8fafc"/>
+<g font-family="Arial,'Noto Sans CJK KR','Malgun Gothic',sans-serif">
 <text x="32" y="44" font-size="27" font-weight="700" fill="#17253b">philosophers · 동시성 구조</text>
-<text x="32" y="74" font-size="16" fill="#4b5e78">Thread · Fork Mutex · 상태 갱신 · 종료 조건</text>
-<rect x="32" y="105" width="936" height="124" rx="12" fill="#edf2ff" stroke="#b8c7e3"/>
-<text x="52" y="137" font-size="17" font-weight="700" fill="#4865a0">01  Philosopher Thread</text>
-<rect x="194" y="132" width="220" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/><text x="212" y="162" font-size="18" font-weight="700" fill="#163b76">Philosopher i</text><text x="212" y="187" font-size="14" fill="#263a54">think → pick_up → eat → sleep</text>
-<rect x="454" y="132" width="170" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/><text x="472" y="162" font-size="17" font-weight="700" fill="#163b76">Right Fork</text><text x="472" y="187" font-size="14" fill="#263a54">Mutex</text>
-<rect x="664" y="132" width="170" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/><text x="682" y="162" font-size="17" font-weight="700" fill="#163b76">Left Fork</text><text x="682" y="187" font-size="14" fill="#263a54">Mutex</text>
-<path d="M414 168 H444" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/><path d="M624 168 H654" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="32" y="245" width="936" height="102" rx="12" fill="#fff" stroke="#b8c7e3"/>
-<text x="52" y="277" font-size="17" font-weight="700" fill="#4865a0">02  상태</text>
-<rect x="194" y="267" width="280" height="58" rx="10" fill="#f5f8ff" stroke="#cbd5e1"/><text x="212" y="292" font-size="17" font-weight="700" fill="#163b76">철학자별 상태</text><text x="212" y="315" font-size="14" fill="#263a54">hunger_time · eat_cnt</text>
-<rect x="514" y="267" width="280" height="58" rx="10" fill="#f5f8ff" stroke="#cbd5e1"/><text x="532" y="292" font-size="17" font-weight="700" fill="#163b76">공통 상태</text><text x="532" y="315" font-size="14" fill="#263a54">full_cnt · is_surv</text>
-<rect x="32" y="363" width="936" height="105" rx="12" fill="#ecf8f4" stroke="#a9d5c6"/>
-<text x="52" y="395" font-size="17" font-weight="700" fill="#086b62">03  Monitor</text>
-<rect x="194" y="386" width="285" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/><text x="212" y="411" font-size="17" font-weight="700" fill="#086b62">생존 Monitor</text><text x="212" y="434" font-size="14" fill="#263a54">마지막 식사 시각 → 사망 조건</text>
-<rect x="519" y="386" width="285" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/><text x="537" y="411" font-size="17" font-weight="700" fill="#086b62">식사 횟수 Monitor</text><text x="537" y="434" font-size="14" fill="#263a54">full_cnt → 전원 목표 달성</text>
+<text x="32" y="74" font-size="16" fill="#4b5e78">Philosopher Thread · Fork Mutex · State · Monitor</text>
+
+<rect x="32" y="104" width="936" height="113" rx="12" fill="#edf2ff" stroke="#b8c7e3"/>
+<text x="52" y="136" font-size="17" font-weight="700" fill="#4865a0">01  식사 동작</text>
+<rect x="160" y="127" width="220" height="66" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="178" y="154" font-size="17" font-weight="700" fill="#163b76">Philosopher Thread i</text><text x="178" y="178" font-size="13" fill="#263a54">think → pick_up → eat → sleep</text>
+<rect x="435" y="127" width="165" height="66" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="453" y="154" font-size="16" font-weight="700" fill="#163b76">Right Fork</text><text x="453" y="178" font-size="13" fill="#263a54">Mutex lock</text>
+<rect x="655" y="127" width="165" height="66" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="673" y="154" font-size="16" font-weight="700" fill="#163b76">Left Fork</text><text x="673" y="178" font-size="13" fill="#263a54">Mutex lock</text>
+<path d="M380 160 H425" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M600 160 H645" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+<rect x="32" y="233" width="936" height="118" rx="12" fill="#fff" stroke="#b8c7e3"/>
+<text x="52" y="265" font-size="17" font-weight="700" fill="#4865a0">02  상태와 출력</text>
+<rect x="160" y="257" width="230" height="70" rx="10" fill="#f5f8ff" stroke="#cbd5e1"/>
+<text x="178" y="284" font-size="16" font-weight="700" fill="#163b76">철학자별 상태</text><text x="178" y="309" font-size="13" fill="#263a54">hunger_time · eat_cnt</text>
+<rect x="430" y="257" width="230" height="70" rx="10" fill="#f5f8ff" stroke="#cbd5e1"/>
+<text x="448" y="284" font-size="16" font-weight="700" fill="#163b76">공통 상태</text><text x="448" y="309" font-size="13" fill="#263a54">full_cnt · is_surv</text>
+<rect x="700" y="257" width="160" height="70" rx="10" fill="#f5f8ff" stroke="#cbd5e1"/>
+<text x="718" y="284" font-size="16" font-weight="700" fill="#163b76">stdout Mutex</text><text x="718" y="309" font-size="13" fill="#263a54">상태 출력 직렬화</text>
+
+<path d="M270 193 V247" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M300 193 C390 226 500 226 545 247" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M330 193 C490 212 720 212 780 247" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"/>
+
+<rect x="32" y="367" width="936" height="150" rx="12" fill="#ecf8f4" stroke="#a9d5c6"/>
+<text x="52" y="399" font-size="17" font-weight="700" fill="#086b62">03  Monitor</text>
+<rect x="180" y="414" width="260" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="198" y="441" font-size="16" font-weight="700" fill="#086b62">생존 Monitor</text><text x="198" y="466" font-size="13" fill="#263a54">hunger_time → 사망 시 is_surv=0</text>
+<rect x="560" y="414" width="260" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/>
+<text x="578" y="441" font-size="16" font-weight="700" fill="#086b62">식사 횟수 Monitor</text><text x="578" y="466" font-size="13" fill="#263a54">full_cnt == 철학자 수 확인</text>
+
+<path d="M275 327 V404" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M545 327 V395 H690 V404" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M310 414 V382 H545 V337" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M310 414 V382 H780 V337" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"/>
 </g></svg>
