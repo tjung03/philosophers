@@ -4,6 +4,29 @@ C와 POSIX Threads로 구현한 식사하는 철학자 시뮬레이션입니다.
 
 42 Seoul 과제로 2021년에 작성했습니다. 핵심은 **포크의 상호 배제, 공유 상태의 갱신, 시간에 따른 종료 조건**을 여러 스레드 안에서 다루는 것입니다.
 
+## 동시성 구조
+
+```mermaid
+flowchart LR
+    P["Philosopher Thread i"]
+    RF["오른쪽 Fork Mutex"]
+    LF["왼쪽 Fork Mutex"]
+    ST["공유 상태<br/>hunger_time · eat_cnt · full_cnt · is_surv"]
+    OUT["stdout Mutex"]
+    M1["생존 Monitor Thread"]
+    M2["식사 횟수 Monitor Thread<br/>(목표 횟수 지정 시)"]
+
+    P -->|"lock"| RF
+    P -->|"lock"| LF
+    P -->|"식사 시 갱신"| ST
+    P -->|"상태 출력"| OUT
+    M1 -->|"마지막 식사 시각 검사"| ST
+    M1 -->|"사망 출력"| OUT
+    M2 -->|"목표 달성 인원 검사"| ST
+```
+
+각 철학자 Thread는 자신에게 할당된 오른쪽·왼쪽 Fork Mutex를 차례로 잠근 뒤 식사하고 해제합니다. Fork는 이웃 철학자와 공유되며, 별도 Monitor Thread가 마지막 식사 시각을 순회해 사망 조건을 확인합니다. 최소 식사 횟수를 지정한 경우에는 목표 달성 인원도 별도 Monitor가 확인합니다.
+
 ## 코드 구조
 
 | 파일 | 역할 |
