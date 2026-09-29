@@ -12,6 +12,7 @@
 
 #include "philo.h"
 
+/* 철학자 한 명은 포크를 둘 다 얻을 수 없고, 짝수 번호는 시작을 늦춰 초기 경합을 줄인다. */
 static void	*start_dining(void *info)
 {
 	t_philo	*po;
@@ -38,6 +39,7 @@ static void	*start_dining(void *info)
 	return (NULL);
 }
 
+/* 식사 횟수 완료는 생존 시간 초과와 별도 모니터에서 종료 조건으로 확인한다. */
 static void	*monitoring_must_eat(void *info)
 {
 	t_common	*mme;
